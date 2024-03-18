@@ -1,4 +1,4 @@
-from data.Vacancy import Vacancy
+from data.vacancy.Vacancy import Vacancy
 from repositories.vacancy.VacancyFilters import VacancyFilters
 from .AbstractVacancyRepository import AbstractVacancyRepository
 import os

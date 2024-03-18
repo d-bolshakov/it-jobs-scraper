@@ -1,21 +1,12 @@
-from data.VacancyCategory import VacancyCategory
 from ..shared.ScrapingTask import ScrapingTask
+from .mappings.CategoryLinks import CATEGORY_LINKS
 
 
-def DouTaskRootUrlBuilder(task: ScrapingTask) -> str | None:
-    url = ''
-    match task.category:
-        case VacancyCategory.FRONT_END:
-            url = 'https://jobs.dou.ua/vacancies/?category=Front%20End'
-
-        case VacancyCategory.NODE:
-            url = 'https://jobs.dou.ua/vacancies/?category=Node.js'
-
-        case VacancyCategory.PYTHON:
-            url = 'https://jobs.dou.ua/vacancies/?category=Python'
-
-        case _:
-            return None
+def DouTaskRootUrlBuilder(task: ScrapingTask) -> str:
+    url = CATEGORY_LINKS[task.category] if task.category in CATEGORY_LINKS else None
+    if not url:
+        raise KeyError(
+            f'URL mapping for category {task.category} does not exist')
 
     match task.years_of_experience:
         case num if 0 <= num <= 1:

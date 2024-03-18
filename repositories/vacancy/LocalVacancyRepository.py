@@ -1,6 +1,6 @@
 from .AbstractVacancyRepository import AbstractVacancyRepository
-from data.Vacancy import Vacancy
-from data.VacancyCategory import VacancyCategory
+from data.vacancy.Vacancy import Vacancy
+from data.vacancy.VacancyCategory import VacancyCategory
 from .VacancyFilters import VacancyFilters
 import os
 import json
@@ -17,11 +17,8 @@ class LocalVacancyRepository(AbstractVacancyRepository):
             vacancies = []
             vacancies = json.load(vacanciesListFile)
             vacancies.append(vacancy)
-            print('s')
-            print(vacancies)
-            print('s ass')
             json.dump([vacancy.asDict()
-                      for vacancy in vacancies], vacanciesListFile, indent=2)
+                      for vacancy in vacancies if type(vacancy) == Vacancy], vacanciesListFile, indent=2)
 
     # def getById(self, id: int) -> Vacancy | None:
     #     if not os.path.isfile(self.filePath) or os.path.getsize(self.filePath) == 0:
@@ -35,7 +32,6 @@ class LocalVacancyRepository(AbstractVacancyRepository):
             return None
         with open(self.filePath) as vacanciesListFile:
             vacancies = json.load(vacanciesListFile)
-            print(vacancies)
         if len(vacancies) == 0:
             return None
         filteredVacancies: list[Vacancy] = []

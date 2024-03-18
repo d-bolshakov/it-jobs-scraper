@@ -1,34 +1,50 @@
 from .ParsingResult import ParsingResult
-from data.Vacancy import Vacancy
 from .utils.DateConverter import convertDate
-from bs4 import BeautifulSoup
+from .utils.LocationExtractor import extractLocationsList
+from .ParsedVacancy import ParsedVacancy
+from bs4 import BeautifulSoup, Tag
 import unicodedata
 
 
 class DouParser:
-    def parse(self, html: str, lastProcessed: Vacancy) -> ParsingResult:
+    def parse(self, html: str, lastProcessedVacancyLink: str) -> ParsingResult:
         bs = BeautifulSoup(html, 'html.parser')
         vacancies, lastProcessedReached = self.parseVacanciesList(
-            bs, lastProcessed)
+            bs, lastProcessedVacancyLink)
         isMoreAvailable = self.isMoreAvailable(bs)
         csrfToken = self.getCSRFToken(bs) if isMoreAvailable else None
         return {'vacancies': vacancies, 'isMoreAvailable': isMoreAvailable, 'lastProcessedReached': lastProcessedReached, 'csrfToken': csrfToken}
 
-    def parseVacanciesList(self, input: BeautifulSoup, lastProcessedVacancy: Vacancy) -> tuple[list[Vacancy], bool]:
+    def parseVacanciesList(self, input: BeautifulSoup, lastProcessedVacancyLink: str) -> tuple[list[ParsedVacancy], bool]:
         lastProcessedReached = False
         vacancies_list = input.select('li.l-vacancy')
-        vacancies: list[Vacancy] = []
+        vacancies: list[ParsedVacancy] = []
         for v in vacancies_list:
-            if lastProcessedVacancy and v.select_one('a.vt')['href'] == lastProcessedVacancy['link']:
+            if lastProcessedVacancyLink and v.select_one('a.vt')['href'] == lastProcessedVacancyLink:
                 lastProcessedReached = True
                 break
-            vacancy = Vacancy(title=v.select_one(
-                'div.title').select_one('a.vt').text, company=unicodedata.normalize(
-                'NFKD', v.select_one('a.company').text).strip(), link=v.select_one('a.vt')['href'], location=v.select_one(
-                'span.cities').text.strip(), publishedAt=convertDate(
-                v.select_one('div.date').text), source='Dou')
-            vacancies.append(vacancy)
+            vacancies.append(self.extractVacancyData(v))
         return vacancies, lastProcessedReached
+
+    def extractVacancyData(self, v: Tag) -> ParsedVacancy:
+        title = v.select_one(
+            'div.title').select_one('a.vt').text
+        company = unicodedata.normalize(
+            'NFKD', v.select_one('a.company').text).strip()
+        link = v.select_one('a.vt')['href']
+        location = extractLocationsList(v.select_one(
+            'span.cities').text.strip())
+        publishedAt = convertDate(
+            v.select_one('div.date').text)
+        source = 'Dou'
+        return {
+            'title': title,
+            'company': company,
+            'link': link,
+            'location': location,
+            'publishedAt': publishedAt,
+            'source': source
+        }
 
     def isMoreAvailable(self, input: BeautifulSoup) -> bool:
         moreButtonDiv = input.select_one('div.more-btn')

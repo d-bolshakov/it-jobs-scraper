@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from data.Vacancy import Vacancy
+from data.vacancy.Vacancy import Vacancy
 from .VacancyFilters import VacancyFilters
 
 

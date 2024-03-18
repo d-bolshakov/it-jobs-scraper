@@ -1,9 +1,9 @@
 from typing import Protocol
-from data.Vacancy import Vacancy
+from .ParsedVacancy import ParsedVacancy
 
 
 class ParsingResult(Protocol):
-    vacancies: list[Vacancy]
+    vacancies: list[ParsedVacancy]
     isMoreAvailable: bool
     lastProcessedReached: bool
     csrfToken: str | None

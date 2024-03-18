@@ -1,4 +1,4 @@
-from data.VacancyCategory import VacancyCategory
+from data.vacancy.VacancyCategory import VacancyCategory
 
 
 class ScrapingTask:
